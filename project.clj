@@ -2,9 +2,8 @@
   :description "Clojure code from my blog posts"
   :url "https://github.com/leeorengel/blog-clojure-code"
   :min-lein-version "2.5.0"
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha7"]
                  [medley "0.7.3"]
                  [org.clojure/test.check "0.9.0"]
-                 [com.gfredericks/test.chuck "0.2.6"]
-                 [prismatic/schema "1.0.4"]]
+                 [com.gfredericks/test.chuck "0.2.6"]]
   :target-path "target/%s")
