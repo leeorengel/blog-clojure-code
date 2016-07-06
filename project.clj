@@ -2,7 +2,7 @@
   :description "Clojure code from my blog posts"
   :url "https://github.com/leeorengel/blog-clojure-code"
   :min-lein-version "2.5.0"
-  :dependencies [[org.clojure/clojure "1.9.0-alpha7"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha9"]
                  [medley "0.7.3"]
                  [org.clojure/test.check "0.9.0"]
                  [com.gfredericks/test.chuck "0.2.6"]]

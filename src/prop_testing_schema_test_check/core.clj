@@ -1,25 +1,42 @@
-(ns prop-testing-schema-test-check.core
+(ns prop-testing-spec-test-check.core
   ^{:author "Leeor Engel"}
-  (:require [schema.core :as s]))
+  (:require [clojure.spec :as s]))
 
-(def REST-NOTE-NUMBER -1)
 (def MIN-NOTE 0)
 (def MAX-NOTE 127)
 
-(def Rest (s/eq REST-NOTE-NUMBER))
-(def Note (s/constrained s/Int #(<= MIN-NOTE % MAX-NOTE)))
-(def NoteOrRest (s/either Note Rest))
-(s/defrecord Melody [notes :- [NoteOrRest]])
+(s/def ::rest #(= % -1))
+(s/def ::note #(<= MIN-NOTE % MAX-NOTE))
 
-(s/defn rest? :- s/Bool [n :- NoteOrRest] (neg? n))
-(s/defn note-count :- s/Int [notes :- [NoteOrRest]] (count (remove rest? notes)))
+(s/def ::note-or-rest (s/or :note ::note :rest ::rest))
 
-(s/defn with-new-notes :- Melody
-  [melody :- Melody new-notes :- [Note]]
-  {:pre [(= (count new-notes) (note-count (:notes melody)))]}
+(s/def ::notes (s/and vector? (s/+ ::note-or-rest)))
+
+(defrecord Melody [notes])
+
+(s/def ::melody (s/keys :req-un [::notes]))
+
+(defn rest? [n] (neg? n))
+(s/fdef rest?
+        :args (s/+ ::note-or-rest)
+        :ret boolean?)
+
+(defn note-count [notes] (count (remove rest? notes)))
+(s/fdef note-count
+        :args (s/and vector? (s/+ ::note-or-rest))
+        :ret integer?
+        :fn #(<= (:ret %) (-> % :args :notes count)))
+
+(defn with-new-notes [melody new-notes] 
   (let [notes (first (reduce (fn [[updated-notes new-notes] note]
                                (if (rest? note)
                                  [(conj updated-notes note) new-notes]
                                  [(conj updated-notes (first new-notes)) (rest new-notes)]))
                              [[] new-notes] (:notes melody)))]
     (->Melody notes)))
+
+(s/fdef with-new-notes
+        :args (s/and (s/cat :melody ::melody
+                            :new-notes (s/+ ::note))
+                     #(= (count (:new-notes %)) (note-count (-> :melody :notes %))))
+        :ret ::melody)

@@ -1,0 +1,8 @@
+*.iml
+/.idea/compiler.xml
+/.idea/copyright/profiles_settings.xml
+/.idea/encodings.xml
+target
+/.idea/libraries/Leiningen__clj_time_0_10_0.xml
+/.idea/libraries/Leiningen__clojure_complete_0_2_4.xml
+/.idea/libraries/Leiningen__com_andrewmcveigh_cljs_time_0_3_11.xml
