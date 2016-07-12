@@ -7,7 +7,6 @@
 
 (s/def ::rest #(= % -1))
 (s/def ::note #(<= MIN-NOTE % MAX-NOTE))
-
 (s/def ::note-or-rest (s/or :note ::note :rest ::rest))
 
 (s/def ::notes (s/and vector? (s/+ ::note-or-rest)))
