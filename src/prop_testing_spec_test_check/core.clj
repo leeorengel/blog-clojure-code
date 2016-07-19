@@ -1,12 +1,13 @@
 (ns prop-testing-spec-test-check.core
   ^{:author "Leeor Engel"}
-  (:require [clojure.spec :as s]))
+  (:require [clojure.spec :as s]
+            [clojure.spec.gen :as gen]))
 
 (def MIN-NOTE 0)
 (def MAX-NOTE 127)
 
 (s/def ::rest #(= % -1))
-(s/def ::note #(<= MIN-NOTE % MAX-NOTE))
+(s/def ::note (s/int-in MIN-NOTE (inc MAX-NOTE)))
 (s/def ::note-or-rest (s/or :note ::note :rest ::rest))
 
 (s/def ::notes (s/and vector? (s/+ ::note-or-rest)))
@@ -16,12 +17,12 @@
 
 (defn rest? [n] (neg? n))
 (s/fdef rest?
-        :args ::note-or-rest
+        :args (s/cat :n ::note-or-rest)
         :ret boolean?)
 
 (defn note-count [notes] (count (remove rest? notes)))
 (s/fdef note-count
-        :args ::notes
+        :args (s/cat :notes ::notes)
         :ret integer?
         :fn #(<= (:ret %) (-> % :args :notes count)))
 
