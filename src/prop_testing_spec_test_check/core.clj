@@ -6,7 +6,9 @@
 (def MIN-NOTE 0)
 (def MAX-NOTE 127)
 
-(s/def ::rest #(= % -1))
+(s/def ::rest (s/spec #(= % -1)
+                      :gen #(gen/return -1)))
+
 (s/def ::note (s/int-in MIN-NOTE (inc MAX-NOTE)))
 (s/def ::note-or-rest (s/or :note ::note :rest ::rest))
 
@@ -26,7 +28,7 @@
         :ret integer?
         :fn #(<= (:ret %) (-> % :args :notes count)))
 
-(defn with-new-notes [melody new-notes] 
+(defn with-new-notes [melody new-notes]
   (let [notes (first (reduce (fn [[updated-notes new-notes] note]
                                (if (rest? note)
                                  [(conj updated-notes note) new-notes]
@@ -39,4 +41,5 @@
                           :new-notes (s/+ ::note))
                    #(= (-> % :melody :notes note-count) (-> % :new-notes count)))
         :ret ::melody
-        :fn #(= (-> % :args :new-notes count) (note-count (-> :ret % :notes))))
+        :fn (s/and #(= (-> % :args :new-notes count) (note-count (-> :ret % :notes)))
+                   #(= (-> % :args :new-notes) (remove rest? (-> :ret % :notes)))))
