@@ -12,7 +12,7 @@
 (s/def ::note (s/int-in MIN-NOTE (inc MAX-NOTE)))
 (s/def ::note-or-rest (s/or :note ::note :rest ::rest))
 
-(s/def ::notes (s/and vector? (s/+ ::note-or-rest)))
+(s/def ::notes (s/coll-of ::note-or-rest :kind vector?))
 (defrecord Melody [notes])
 
 (s/def ::melody (s/keys :req-un [::notes]))
@@ -37,9 +37,8 @@
     (->Melody notes)))
 
 (s/fdef with-new-notes
-        :args (s/& (s/cat :melody ::melody
-                          :new-notes (s/+ ::note))
-                   #(= (-> % :melody :notes note-count) (-> % :new-notes count)))
+        :args (s/cat :melody ::melody
+                     :new-notes (s/coll-of ::note :kind vector?))
         :ret ::melody
         :fn (s/and #(= (-> % :args :new-notes count) (note-count (-> :ret % :notes)))
                    #(= (-> % :args :new-notes) (remove rest? (-> :ret % :notes)))))
