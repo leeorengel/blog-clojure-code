@@ -6,6 +6,7 @@
             [clojure.test.check.properties :as prop]
             [clojure.test.check.generators :as tcg]
             [clojure.test.check.clojure-test :refer :all]
+            [com.gfredericks.test.chuck.properties :as tcp]
             [clojure.spec :as s]
             [clojure.spec.gen :as gen]
             [clojure.spec.test :as stest]))
@@ -32,6 +33,11 @@
 (defn melody-gen [size num-notes]
   (s/gen ::core/melody {::core/notes #(notes-and-rests-gen size num-notes)}))
 
+;;
+;; test.check version
+;;
+
+
 (defspec with-new-notes-test-check 1000
   (let [test-gens (tcg/let [num-notes tcg/s-pos-int
                             melody-num-rests tcg/s-pos-int
@@ -43,5 +49,19 @@
                   (let [new-melody (with-new-notes melody new-notes)]
                     (= (count new-notes) (note-count (:notes new-melody)))
                     (= new-notes (remove rest? (:notes new-melody)))))))
+
+;;
+;; test.chuck version
+;;
+
+(defspec with-new-notes-test-chuck 1000
+         (tcp/for-all [num-notes tcg/s-pos-int
+                       melody-num-rests tcg/s-pos-int
+                       total-melody-num-notes (gen/return (+ num-notes melody-num-rests))
+                       melody (melody-gen total-melody-num-notes num-notes)
+                       notes (notes-gen num-notes)]
+                      (let [new-melody (with-new-notes melody notes)]
+                        (= (count notes) (note-count (:notes new-melody)))
+                        (= notes (remove rest? (:notes new-melody))))))
 
 
