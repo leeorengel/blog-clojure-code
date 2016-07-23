@@ -3,11 +3,12 @@
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]))
 
+(def REST-NOTE-NUMBER -1)
 (def MIN-NOTE 0)
 (def MAX-NOTE 127)
 
-(s/def ::rest (s/spec #(= % -1)
-                      :gen #(gen/return -1)))
+(s/def ::rest (s/spec #(= % REST-NOTE-NUMBER)
+                      :gen #(gen/return REST-NOTE-NUMBER)))
 
 (s/def ::note (s/int-in MIN-NOTE (inc MAX-NOTE)))
 (s/def ::note-or-rest (s/or :note ::note :rest ::rest))

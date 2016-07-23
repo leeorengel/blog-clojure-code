@@ -37,7 +37,6 @@
 ;; test.check version
 ;;
 
-
 (defspec with-new-notes-test-check 1000
   (let [test-gens (tcg/let [num-notes tcg/s-pos-int
                             melody-num-rests tcg/s-pos-int
