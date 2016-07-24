@@ -13,7 +13,7 @@
 (s/def ::note (s/int-in MIN-NOTE (inc MAX-NOTE)))
 (s/def ::note-or-rest (s/or :note ::note :rest ::rest))
 
-(s/def ::notes (s/coll-of ::note-or-rest :kind vector?))
+(s/def ::notes (s/coll-of ::note-or-rest :kind vector? :min-count 1))
 (defrecord Melody [notes])
 
 (s/def ::melody (s/keys :req-un [::notes]))
@@ -37,9 +37,23 @@
                              [[] new-notes] (:notes melody)))]
     (->Melody notes)))
 
+(s/def ::notes-only (s/coll-of ::note :kind vector? :min-count 1))
+
+(defn- de-structure-melody [m]
+  (->Melody (reduce (fn [notes [_ n]]
+                      (conj notes n))
+                    [] (:notes m))))
+
+(defn- note-counts-match? [melody notes]
+  (= (count notes) (note-count (:notes melody))))
+
+(defn- notes-match? [melody notes]
+  (= notes (remove rest? (:notes melody))))
+
 (s/fdef with-new-notes
         :args (s/cat :melody ::melody
-                     :new-notes (s/coll-of ::note :kind vector?))
+                     :new-notes ::notes-only)
         :ret ::melody
-        :fn (s/and #(= (-> % :args :new-notes count) (note-count (-> :ret % :notes)))
-                   #(= (-> % :args :new-notes) (remove rest? (-> :ret % :notes)))))
+        ;; s/unform should work for :ret values but it doesnt. bug?
+        :fn (s/and #(note-counts-match? (de-structure-melody (:ret %)) (:new-notes (:args %)))
+                   #(notes-match? (de-structure-melody (:ret %)) (:new-notes (:args %)))))
