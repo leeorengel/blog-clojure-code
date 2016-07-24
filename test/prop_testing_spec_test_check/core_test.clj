@@ -41,29 +41,34 @@
                                                              ::core/notes-only #(notes-gen 4)}
                               :clojure.spec.test.check/opts {:num-tests 10}})
 
- (defspec with-new-notes-test-check 10
-   (let [test-gens (tcg/let [num-notes tcg/s-pos-int
-                             melody-num-rests tcg/s-pos-int
-                             total-melody-num-notes (tcg/return (+ num-notes melody-num-rests))
-                             melody (melody-gen total-melody-num-notes num-notes)
-                             new-notes (notes-gen num-notes)]
-                     [melody new-notes])]
-     (prop/for-all [[melody new-notes] test-gens]
-                   (let [new-melody (with-new-notes melody new-notes)]
-                     (= (count new-notes) (note-count (:notes new-melody)))
-                     (= new-notes (remove rest? (:notes new-melody)))))))
+(first (tcg/sample (notes-gen 4) 1))
+(first (tcg/sample (melody-gen 5 4) 1))
+(with-new-notes {:notes [1 0 -1 1 0]} [1 0 0 0])
+
+(defspec with-new-notes-test-check 1000
+         (let [test-gens (tcg/let [num-notes tcg/s-pos-int
+                                   melody-num-rests tcg/s-pos-int
+                                   total-melody-num-notes (tcg/return (+ num-notes melody-num-rests))
+                                   melody (melody-gen total-melody-num-notes num-notes)
+                                   new-notes (notes-gen num-notes)]
+                                  [melody new-notes])]
+           (prop/for-all [[melody new-notes] test-gens]
+                         (let [new-melody (with-new-notes melody new-notes)]
+                           (= (count new-notes) (note-count (:notes new-melody)))
+                           (= new-notes (remove rest? (:notes new-melody)))
+                           (= (count (:notes melody)) (count (:notes new-melody)))))))
 ;;
 ;; test.chuck version
 ;;
 
-(defspec with-new-notes-test-chuck 10
-  (tcp/for-all [num-notes tcg/s-pos-int
-                melody-num-rests tcg/s-pos-int
-                total-melody-num-notes (gen/return (+ num-notes melody-num-rests))
-                melody (melody-gen total-melody-num-notes num-notes)
-                notes (notes-gen num-notes)]
-               (let [new-melody (with-new-notes melody notes)]
-                 (= (count notes) (note-count (:notes new-melody)))
-                 (= notes (remove rest? (:notes new-melody))))))
+(defspec with-new-notes-test-chuck 1000
+         (tcp/for-all [num-notes tcg/s-pos-int
+                       melody-num-rests tcg/s-pos-int
+                       total-melody-num-notes (gen/return (+ num-notes melody-num-rests))
+                       melody (melody-gen total-melody-num-notes num-notes)
+                       notes (notes-gen num-notes)]
+                      (let [new-melody (with-new-notes melody notes)]
+                        (= (count notes) (note-count (:notes new-melody)))
+                        (= notes (remove rest? (:notes new-melody)))
+                        (= (count (:notes melody)) (count (:notes new-melody))))))
 
-(run-tests)

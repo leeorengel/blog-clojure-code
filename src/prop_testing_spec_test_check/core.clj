@@ -56,4 +56,6 @@
         :ret ::melody
         ;; s/unform should work for :ret values but it doesnt. bug?
         :fn (s/and #(note-counts-match? (de-structure-melody (:ret %)) (:new-notes (:args %)))
-                   #(notes-match? (de-structure-melody (:ret %)) (:new-notes (:args %)))))
+                   #(notes-match? (de-structure-melody (:ret %)) (:new-notes (:args %)))
+                   #(= (count (:notes (:melody (:args %))))
+                       (count (:notes (de-structure-melody (:ret %)))))))
