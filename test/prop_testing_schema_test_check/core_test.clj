@@ -29,18 +29,18 @@
 (s/defn rests-gen :- Generator [size :- PositiveInt] (gen/vector RestGenerator size))
 
 (s/defn notes-and-rests-gen :- Generator
-  [size :- PositiveInt
-   num-notes :- PositiveInt]
-  (gen/bind (notes-gen num-notes) (fn [v]
-                                  (let [remaining (- size num-notes)]
-                                    (if (zero? remaining)
-                                      (gen/return v)
-                                      (gen/fmap (fn [rests] (shuffle (into v rests))) (rests-gen remaining)))))))
+        [size :- PositiveInt
+         num-notes :- PositiveInt]
+        (gen/bind (notes-gen num-notes) (fn [v]
+                                          (let [remaining (- size num-notes)]
+                                            (if (zero? remaining)
+                                              (gen/return v)
+                                              (gen/fmap (fn [rests] (shuffle (into v rests))) (rests-gen remaining)))))))
 
 (s/defn melody-gen :- Generator
-  ([size :- PositiveInt
-    num-notes :- PositiveInt]
-    (sgen/generator Melody {[NoteOrRest] (notes-and-rests-gen size num-notes)})))
+        ([size :- PositiveInt
+          num-notes :- PositiveInt]
+          (sgen/generator Melody {[NoteOrRest] (notes-and-rests-gen size num-notes)})))
 
 ;;
 ;; test.check version
@@ -48,15 +48,15 @@
 
 (defspec with-new-notes-test-check 1000
          (let [test-gens (gen/let [num-notes gen/s-pos-int
-                                 melody-num-rests gen/s-pos-int
-                                 total-melody-num-notes (gen/return (+ num-notes melody-num-rests))
-                                 melody (melody-gen total-melody-num-notes num-notes)
-                                 notes (notes-gen num-notes)]
+                                   melody-num-rests gen/s-pos-int
+                                   total-melody-num-notes (gen/return (+ num-notes melody-num-rests))
+                                   melody (melody-gen total-melody-num-notes num-notes)
+                                   notes (notes-gen num-notes)]
                                   [melody notes])]
            (prop/for-all [[melody notes] test-gens]
                          (let [new-melody (with-new-notes melody notes)]
-                        (= (count notes) (note-count (:notes new-melody)))
-                        (= notes (remove rest? (:notes new-melody)))))))
+                           (and (= (count notes) (note-count (:notes new-melody)))
+                                (= notes (remove rest? (:notes new-melody))))))))
 
 ;;
 ;; test.chuck version
@@ -69,5 +69,5 @@
                        melody (melody-gen total-melody-num-notes num-notes)
                        notes (notes-gen num-notes)]
                       (let [new-melody (with-new-notes melody notes)]
-                        (= (count notes) (note-count (:notes new-melody)))
-                        (= notes (remove rest? (:notes new-melody))))))
+                        (and (= (count notes) (note-count (:notes new-melody)))
+                             (= notes (remove rest? (:notes new-melody)))))))
